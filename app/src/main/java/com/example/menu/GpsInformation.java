@@ -1,8 +1,10 @@
 package com.example.menu;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -71,7 +73,7 @@ public class GpsInformation extends Service implements LocationListener {
 
             if (!isGPSEnabled && !isNetworkEnabled) {
                 //위치와 네트워크를 사용하지 못할 때
-                Toast.makeText("",,Toast.LENGTH_SHORT);
+                //Toast.makeText("",,Toast.LENGTH_SHORT);
 
             } else {
                 this.isGetLocation = true;
@@ -118,9 +120,105 @@ public class GpsInformation extends Service implements LocationListener {
         return location;
     }
 
+    public void stopUsingGPS(){
+
+        if(locationManager != null){
+
+            locationManager.removeUpdates(GpsInformation.this);
+
+        }
+
+    }
+
+
+
+    /**
+
+     * 위도값을 가져옵니다.
+
+     * */
+
+    public double getLatitude(){
+
+        if(location != null){
+
+            lat = location.getLatitude();
+
+        }
+
+        return lat;
+
+    }
+
+
+
+    /**
+
+     * 경도값을 가져옵니다.
+
+     * */
+
+    public double getLongitude(){
+
+        if(location != null){
+
+            lon = location.getLongitude();
+
+        }
+
+        return lon;
+
+    }
+
+
+
+    /**
+
+     * GPS 나 wife 정보가 켜져있는지 확인합니다.
+
+     * */
+
+    public boolean isGetLocation() {
+
+        return this.isGetLocation;
+
+    }
+
     public GpsInformation(Context mContext) {
         this.mContext = mContext;
     }
+
+    public void showSettingsAlert(){
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+
+
+
+        alertDialog.setTitle("GPS 사용유무셋팅");
+
+        alertDialog.setMessage("GPS 셋팅이 되지 않았을수도 있습니다. \n 설정창으로 가시겠습니까?");
+
+
+
+        // OK 를 누르게 되면 설정창으로 이동합니다.
+        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog,int which) {
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        mContext.startActivity(intent);
+                    }
+                });
+
+        // Cancle 하면 종료 합니다.
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) { dialog.cancel(); }
+                });
+
+        alertDialog.show();
+
+    }
+
 
     @Nullable
     @Override
