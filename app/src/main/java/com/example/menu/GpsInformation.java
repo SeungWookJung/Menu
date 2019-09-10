@@ -1,5 +1,6 @@
 package com.example.menu;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Service;
@@ -18,6 +19,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
+import static androidx.core.app.ActivityCompat.requestPermissions;
 
 public class GpsInformation extends Service implements LocationListener {
 
@@ -201,8 +204,7 @@ public class GpsInformation extends Service implements LocationListener {
 
 
         // OK 를 누르게 되면 설정창으로 이동합니다.
-        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-
+        alertDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int which) {
                         Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                         mContext.startActivity(intent);
@@ -210,9 +212,11 @@ public class GpsInformation extends Service implements LocationListener {
                 });
 
         // Cancle 하면 종료 합니다.
-
-        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) { dialog.cancel(); }
+        alertDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        dialog.cancel();
+                    }
                 });
 
         alertDialog.show();
@@ -245,4 +249,5 @@ public class GpsInformation extends Service implements LocationListener {
     public void onProviderDisabled(String s) {
 
     }
+
 }
