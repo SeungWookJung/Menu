@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.widget.Toast;
 
 import static java.lang.System.exit;
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 public class LoadingActivity extends AppCompatActivity {
 
@@ -36,33 +37,57 @@ public class LoadingActivity extends AppCompatActivity {
         alertDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
+                startActivityForResult(intent,0);
+                Toast.makeText(LoadingActivity.this,"GPS를 활성화 시켜주세요",Toast.LENGTH_LONG).show();
+
             }
         });
 
-        //Cancle 하면 종료 합니다.
+        //Cancel 하면 종료 합니다.
         alertDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
 
-                exit(1);
+                Toast.makeText(LoadingActivity.this, "GPS와 인터넷이 연결되어 있어야 합니다.", Toast.LENGTH_LONG).show();
+                ToEnd();
             }
         });
 
+
             //gps가 꺼져 있을시 설정 화면으로 이동
-            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+            {
                 alertDialog.show();
             }
+
             //gps가 켜져 있을시 자동으로 메인화면으로 넘어감
-            else
-                {
-                ToMain();
-                }
+            else { ToMain(); }
 
     }
-    private void ToMain()
+    private void ToMain() //메인화면으로 넘어감
     {
         intent = new Intent(this,MainActivity.class);
         startActivity(intent);
+        finish();
+    }
+    private void ToEnd() //종료
+    {
+        exit(1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode,int resultCode, Intent data) //설정화면에서 복귀시에 처리하는 함수
+    {
+        switch(requestCode){
+            case 0:
+                if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                {
+                    Toast.makeText(LoadingActivity.this, "GPS와 인터넷이 연결되어 있어야 합니다.", Toast.LENGTH_LONG).show();
+                    ToEnd();
+                }
+                else
+                    ToMain();
+                break;
+        }
     }
 }
