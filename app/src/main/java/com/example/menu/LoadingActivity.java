@@ -2,20 +2,16 @@ package com.example.menu;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.Manifest;
-import android.app.Activity;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
 
 import static java.lang.System.exit;
-import static java.nio.file.FileVisitResult.CONTINUE;
 
 public class LoadingActivity extends AppCompatActivity {
 
@@ -29,7 +25,7 @@ public class LoadingActivity extends AppCompatActivity {
 
         locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(LoadingActivity.this);
         alertDialog.setTitle("GPS 사용유무셋팅");
         alertDialog.setMessage("GPS 셋팅이 되지 않았을수도 있습니다. \n 설정창으로 가시겠습니까?");
 
@@ -66,7 +62,7 @@ public class LoadingActivity extends AppCompatActivity {
     }
     private void ToMain() //메인화면으로 넘어감
     {
-        intent = new Intent(this,MainActivity.class);
+        intent = new Intent(this,MapsActivity.class);
         startActivity(intent);
         finish();
     }
