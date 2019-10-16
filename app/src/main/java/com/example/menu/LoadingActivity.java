@@ -26,8 +26,8 @@ public class LoadingActivity extends AppCompatActivity {
         locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(LoadingActivity.this);
-        alertDialog.setTitle("GPS 사용유무셋팅");
-        alertDialog.setMessage("GPS 셋팅이 되지 않았을수도 있습니다. \n 설정창으로 가시겠습니까?");
+        alertDialog.setTitle("Weather_GPS 사용유무셋팅");
+        alertDialog.setMessage("Weather_GPS 셋팅이 되지 않았을수도 있습니다. \n 설정창으로 가시겠습니까?");
 
         //OK 를 누르게 되면 설정창으로 이동합니다.
         alertDialog.setPositiveButton("확인", new DialogInterface.OnClickListener() {
@@ -62,7 +62,7 @@ public class LoadingActivity extends AppCompatActivity {
     }
     private void ToMain() //메인화면으로 넘어감
     {
-        intent = new Intent(this,MapsActivity.class);
+        intent = new Intent(this, Weather_GPS.class);
         startActivity(intent);
         finish();
     }

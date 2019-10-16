@@ -18,23 +18,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 
-    double lat;
-    double lon;
+
     Location location;
+    LocationManager Lm;
+    public static Weather_GPS gps = new Weather_GPS();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        GPS gps = new GPS(MapsActivity.this);
 
-
-        lat = gps.gpsLocationListener.onLocationChanged(location);
-        lon = gps.getLon();
     }
 
 
@@ -42,6 +40,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        double lat = gps.getLat();
+        double lon = gps.getLon();
 
         Log.d("위도","위도: "+ lat);
         Log.d("경도","경도: "+ lon);
