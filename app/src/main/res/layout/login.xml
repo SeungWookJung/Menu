@@ -80,9 +80,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:onClick="OnclicK"
             android:text="로그인"
-            android:textFontWeight="500"
-            android:textColor="@android:color/black"/>
+            android:textColor="@android:color/black"
+            android:textFontWeight="500" />
 
         <Button
             android:id="@+id/SignUp"

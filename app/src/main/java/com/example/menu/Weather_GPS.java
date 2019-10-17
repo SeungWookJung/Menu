@@ -107,10 +107,10 @@ public class Weather_GPS extends Activity
 
     private void getWeather(double latitude, double longitude) {
         Retrofit retrofit =new Retrofit.Builder().addConverterFactory(GsonConverterFactory.create())
-                .baseUrl(ApiService.BASEURL)
+                .baseUrl(WeatherApi.BASEURL)
                 .build();
-        ApiService apiService = retrofit.create(ApiService.class);
-        Call<JsonObject> call = apiService.getWeahter(latitude,longitude,ApiService.APIKEY);
+        WeatherApi weatherApi = retrofit.create(WeatherApi.class);
+        Call<JsonObject> call = weatherApi.getWeahter(latitude,longitude, WeatherApi.APIKEY);
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(@NonNull Call<JsonObject> call, @NonNull Response<JsonObject> response) {

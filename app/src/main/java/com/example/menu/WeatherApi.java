@@ -6,7 +6,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface ApiService {
+public interface WeatherApi {
 
     //베이스 Url
     static final String BASEURL = "http://api.openweathermap.org/data/2.5/";
