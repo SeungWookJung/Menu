@@ -1,68 +1,33 @@
 package com.example.menu;
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.os.AsyncTask;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-public class Login extends AppCompatActivity {
+public class Login extends AsyncTask<String,Void,String> {
 
-    EditText id;
-    EditText pw;
-    Button login;
-    Button signup;
+    public String result;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.login);
-
-        id = (EditText)findViewById(R.id.ID_input);
-        pw = (EditText)findViewById(R.id.Password_input);
-        login =(Button)findViewById(R.id.SignIn);
-        signup = (Button)findViewById(R.id.SignUp);
-
-
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                Login_Server(id.getText().toString(),pw.getText().toString());
-            }
-        };
-        login.setOnClickListener(listener);
-
-
-
+    protected void onPreExecute()
+    {
+        super.onPreExecute();
     }
 
-    private void  Login_Server(String id,String pw)
-    {
-        Retrofit retrofit =new Retrofit.Builder().addConverterFactory(GsonConverterFactory.create())
-                .baseUrl(LoginService.loginUrl)
-                .build();
-        LoginService loginService = retrofit.create(LoginService.class);
+    @Override
+    protected String doInBackground(String... params) {
 
-        loginService.login(id,pw).enqueue(new Callback<LoginResult>() {
-            @Override
-            public void onResponse(Call<LoginResult> call, Response<LoginResult> response) {
-                LoginResult result = response.body();
-                Log.d("1","통신성공");
-            }
+        String url = "http://116.126.79.199"
 
-            @Override
-            public void onFailure(Call<LoginResult> call, Throwable t) {
-                Log.d("2","연결실패");
-            }
-        });
+        return result;
+    }
+    @Override
+    protected void onProgressUpdate(Void... values) {
+        super.onProgressUpdate(values);
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        super.onPostExecute(s);
     }
 }
