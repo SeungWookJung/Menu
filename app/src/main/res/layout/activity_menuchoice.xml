@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+
+    <Button
+        android:id="@+id/Soup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/soup"
+        android:textSize="120sp"
+        android:textColor="@android:color/holo_orange_dark"/>
+
+    <Button
+        android:id="@+id/Rice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/rice"
+        android:textColor="@android:color/holo_green_light"
+        android:textSize="120sp"/>
+
+
+    <Button
+        android:id="@+id/Noodle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/noodle"
+        android:textColor="@android:color/holo_blue_bright"
+        android:textSize="120sp" />
+
+    <Button
+        android:id="@+id/Bunsik"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bunsik"
+        android:textSize="120sp"
+        android:textColor="@android:color/holo_red_dark"/>
+
+
+</LinearLayout>

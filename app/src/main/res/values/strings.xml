@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Menu</string>
     <string name="title_activity_maps">Map</string>
+    <string name="soup">국</string>
+    <string name="rice">밥</string>
+    <string name="noodle">면</string>
+    <string name="bunsik">분식</string>
 </resources>
