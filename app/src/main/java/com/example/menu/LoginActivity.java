@@ -37,7 +37,7 @@ public class LoginActivity extends Activity {
 
 
 
-        View.OnClickListener listener = new View.OnClickListener() {
+        View.OnClickListener LOGIN = new View.OnClickListener() {
             @Override
             public void onClick(View view)
             {
@@ -47,6 +47,9 @@ public class LoginActivity extends Activity {
                     if(result.equals("1"))
                     {
                         Toast.makeText(getApplicationContext(),"로그인 성공",Toast.LENGTH_LONG).show();
+
+                        //사용자정보 내장메모리에 저장
+                        SharedPreference.setAttribute(getApplicationContext(), "userId", id.getText().toString());
 
                         //메뉴 골라주는 액티비티로 진행
                         Intent intent = new Intent(getApplicationContext(),Weather_GPS.class);
@@ -71,11 +74,26 @@ public class LoginActivity extends Activity {
                 }
             }
         };
-        login.setOnClickListener(listener);
+        login.setOnClickListener(LOGIN);
+
+
+        View.OnClickListener SIGNUP = new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                //회원가입 화면으로 진행
+                Intent intent = new Intent(getApplicationContext(),SignUp.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        signup.setOnClickListener(SIGNUP);
 
 
 
     }
+
+
     class Login extends AsyncTask<String,Void,String> {
 
         private String result;
@@ -141,6 +159,7 @@ public class LoginActivity extends Activity {
         }
 
     }
+
 
 
 }

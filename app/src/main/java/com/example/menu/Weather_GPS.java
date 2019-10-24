@@ -12,18 +12,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import org.json.JSONArray;
-
-import java.util.HashMap;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -122,10 +115,10 @@ public class Weather_GPS extends Activity
                     //날씨데이터를 받아옴
                     JsonObject object = response.body();
 
+                    //데이터가 null 이 아니라면
                     if (object != null)
                     {
 
-                        //데이터가 null 이 아니라면
                         JsonArray jarray = object.getAsJsonArray("weather");
                         JsonElement je = jarray.get(0);
                         id = je.getAsJsonObject().get("id").getAsString();
@@ -133,7 +126,7 @@ public class Weather_GPS extends Activity
                     }
                 }
                 else
-                    Toast.makeText(getApplicationContext(),"날씨값을 못얻어 왔습니다.",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"날씨값이 없습니다.",Toast.LENGTH_LONG).show();
             }
             @Override
             public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
