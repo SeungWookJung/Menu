@@ -6,10 +6,12 @@ import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -17,6 +19,9 @@ import android.widget.Toast;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,12 +37,37 @@ public class Weather_GPS extends Activity
 
 
     LocationManager Lm;
-    String id; //날씨의 아이디 값
+    static int id; //날씨의 아이디 값
+    static String NowWeather; //현재 날씨 값
+    Intent intent;
+    int UserMenu; //유저가 고른 밥,국,면,분식 값
+
+    //설문지의 국 메뉴
+    static String SoupMenu[]  = {"김치찌개","된장찌개","돼지국밥","마라탕","곱창전골","수제비","감자탕", "순두부찌개","해장국"};
+    //설문지의 밥메뉴
+    static String RiceMenu[] = {"돼지국밥","두루치기"};
+    //설문지의 면메뉴
+    static String NoodleMenu[] = {"칼국수","밀면","파스타","냉면","짬뽕","라면","우동"};
+    //설문지의 분식 및 나머지 메뉴
+    static String BunsikMenu[] = {"김치전","떡볶이","파전","탕수육","치킨","햄버거"};
+
+    //나쁜 날씨의 최종 메뉴 리스트
+    static ArrayList<String> BadWeatherMenu = new ArrayList<String>();
+    //좋은날의 최종 메뉴 리스트
+    static ArrayList<String> GoodWeatherMenu = new ArrayList<String>();
+    //랜덤 클래스
+    Random rnd = new Random();
+
+    //최종 메뉴
+    static String pickMenu = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.testweather);
+
+         intent = getIntent();
+         UserMenu = intent.getIntExtra("menu",0);
 
          Lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -52,12 +82,36 @@ public class Weather_GPS extends Activity
             SetLat(location.getLatitude());
             SetLon(location.getLongitude());
 
-            Lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, gpsLocationListener);
-            Lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 1, gpsLocationListener);
+
+
+            Lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, gpsLocationListener);
+            Lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 1, gpsLocationListener);
+
+            //위동 경도 값이 둘다 빈값이 아니면 gps사용중지 및 메뉴 선정 함수 구동
+            if(getLat() != 0 )
+            {
+                if(getLon() !=0)
+                {
+                    Lm.removeUpdates(gpsLocationListener);
+
+                    getMenu(id,UserMenu); //메뉴를 최종선택 해주는 함수
+
+                    intent = new Intent(getApplicationContext(),MapsActivity.class);
+                    intent.putExtra("PickMenu",pickMenu);
+                    startActivity(intent);
+                }
+            }
+
 
         }
 
+    }
 
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        Lm.removeUpdates(gpsLocationListener);
     }
 
 
@@ -66,7 +120,6 @@ public class Weather_GPS extends Activity
 
              SetLon((location.getLongitude()));
              SetLat((location.getLatitude()));
-
 
             getWeather(getLat(), getLon());
         }
@@ -121,8 +174,7 @@ public class Weather_GPS extends Activity
 
                         JsonArray jarray = object.getAsJsonArray("weather");
                         JsonElement je = jarray.get(0);
-                        id = je.getAsJsonObject().get("id").getAsString();
-
+                        id = Integer.parseInt(je.getAsJsonObject().get("id").getAsString());
                     }
                 }
                 else
@@ -133,6 +185,182 @@ public class Weather_GPS extends Activity
 
             }
         });
+    }
+
+    private String getMenu(int id,int userMenu)
+    {
+
+
+        //랜덤값을 담을 변수
+        int random =0;
+
+        if(200<=id || id<300) //천둥 번개
+        {
+            NowWeather = "비";
+        }
+        else if(300<=id || id<400) //이슬비
+        {
+            NowWeather = "비";
+        }
+        else if(500<=id || id<600) //비
+        {
+            NowWeather = "비";
+        }
+        else if(600<=id || id<700) //눈
+        {
+            NowWeather = "눈";
+        }
+        else if(700<=id || id<800) //안개 미세먼지 등
+        {
+            NowWeather = "흐림";
+        }
+        else if(800<=id || id<900) //좋은 날씨
+        {
+            NowWeather = "좋음";
+        }
+
+        switch (userMenu)
+        {
+            case 1: //유저가 국을 선택 했을 때
+
+                if(NowWeather == "비" || NowWeather == "흐림" || NowWeather == "눈")
+                {
+                    for(int i=0;i<SoupMenu.length;i++)
+                    {
+                        if(SoupMenu[i].matches(".*찌개.*") || SoupMenu[i].matches(".*국.*") || SoupMenu[i].matches(".*탕.*"))
+                        {
+                            BadWeatherMenu.add(SoupMenu[i]);
+                            random = rnd.nextInt(BadWeatherMenu.size());
+                            pickMenu = BadWeatherMenu.get(random);
+                            random = 0;
+                            break;
+                        }
+
+                    }
+                }
+
+                else if(NowWeather == "좋음")
+                {
+                    for(int i=0;i<SoupMenu.length;i++)
+                    {
+                        if(SoupMenu[i].matches(".*국.*") || SoupMenu[i].matches(".*탕.*"))
+                        {
+                            GoodWeatherMenu.add(SoupMenu[i]);
+                            random = rnd.nextInt(GoodWeatherMenu.size());
+                            pickMenu = GoodWeatherMenu.get(random);
+                            random = 0;
+                            break;
+                        }
+
+                    }
+                }
+
+            case 2: //유저가 밥을 선택했을 때
+
+                if(NowWeather == "비" || NowWeather == "흐림" || NowWeather == "눈")
+                {
+                    for(int i=0;i<RiceMenu.length;i++)
+                    {
+                        if(RiceMenu[i].matches(".*찌개.*") || RiceMenu[i].matches(".*국.*") || RiceMenu[i].matches(".*탕.*"))
+                        {
+                            BadWeatherMenu.add(RiceMenu[i]);
+                            random = rnd.nextInt(BadWeatherMenu.size());
+                            pickMenu = BadWeatherMenu.get(random);
+                            random = 0;
+                            break;
+                        }
+
+                    }
+                }
+
+                else if(NowWeather == "좋음")
+                {
+                    for(int i=0;i<RiceMenu.length;i++)
+                    {
+                        if(RiceMenu[i].matches(".*국.*") || RiceMenu[i].matches(".*탕.*"))
+                        {
+                            GoodWeatherMenu.add(RiceMenu[i]);
+                            random = rnd.nextInt(GoodWeatherMenu.size());
+                            pickMenu = GoodWeatherMenu.get(random);
+                            random = 0;
+                            break;
+                        }
+
+                    }
+                }
+
+                case 3: //유저가 면을 선택한 경우
+
+                    if(NowWeather == "비" || NowWeather == "흐림" || NowWeather == "눈")
+                    {
+                        for(int i=0;i<NoodleMenu.length;i++)
+                        {
+                            if(NoodleMenu[i].matches(".*찌개.*") || NoodleMenu[i].matches(".*국.*") || NoodleMenu[i].matches(".*탕.*"))
+                            {
+                                BadWeatherMenu.add(NoodleMenu[i]);
+                                random = rnd.nextInt(BadWeatherMenu.size());
+                                pickMenu = BadWeatherMenu.get(random);
+                                random = 0;
+                                break;
+                            }
+
+                        }
+                    }
+
+                    else if(NowWeather == "좋음")
+                    {
+                        for(int i=0;i<NoodleMenu.length;i++)
+                        {
+                            if(NoodleMenu[i].matches(".*국.*") || NoodleMenu[i].matches(".*탕.*"))
+                            {
+                                GoodWeatherMenu.add(NoodleMenu[i]);
+                                random = rnd.nextInt(GoodWeatherMenu.size());
+                                pickMenu = GoodWeatherMenu.get(random);
+                                random =0;
+                                break;
+                            }
+
+                        }
+                    }
+
+            case 4: //유저가 4분식을 골랐을 경우
+
+                if(NowWeather == "비" || NowWeather == "흐림" || NowWeather == "눈")
+                {
+                    for(int i=0;i<BunsikMenu.length;i++)
+                    {
+                        if(BunsikMenu[i].matches(".*찌개.*") || BunsikMenu[i].matches(".*국.*") || BunsikMenu[i].matches(".*탕.*"))
+                        {
+                            BadWeatherMenu.add(BunsikMenu[i]);
+                            random = rnd.nextInt(BadWeatherMenu.size());
+                            pickMenu = BadWeatherMenu.get(random);
+                            random = 0;
+                            break;
+                        }
+
+                    }
+                }
+
+                else if(NowWeather == "좋음")
+                {
+                    for(int i=0;i<BunsikMenu.length;i++)
+                    {
+                        if(BunsikMenu[i].matches(".*국.*") || RiceMenu[i].matches(".*탕.*"))
+                        {
+                            GoodWeatherMenu.add(BunsikMenu[i]);
+                            random = rnd.nextInt(GoodWeatherMenu.size());
+                            pickMenu = GoodWeatherMenu.get(random);
+                            random = 0;
+                            break;
+                        }
+
+                    }
+                }
+
+        }
+
+
+        return pickMenu;
     }
 
 }
