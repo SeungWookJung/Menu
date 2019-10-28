@@ -1,31 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@android:color/holo_red_light"
-    >
+    tools:context=".LoadingActivity">
 
-    <androidx.appcompat.widget.AppCompatImageView
-
-        android:layout_width="match_parent"
-        android:layout_height="383dp"
-        android:layout_gravity="top"
-        android:background="@drawable/title">
-
-    </androidx.appcompat.widget.AppCompatImageView>
-
-    <TextView
-
-        android:id="@+id/textView"
+    <ImageView
+        android:id="@+id/loading"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1000"
-        android:gravity="center"
-        android:text="뭐먹을까?"
-        android:textColor="@android:color/white"
-        android:textSize="90dp" />
+        >
+
+    </ImageView>
+
 
 </LinearLayout>
 

@@ -2,23 +2,29 @@ package com.example.menu;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class MenuChoice extends AppCompatActivity {
+public class MenuChoice extends Activity {
 
-    Button soup = (Button)findViewById(R.id.Soup);
-    Button rice = (Button)findViewById(R.id.Rice);
-    Button noodle = (Button)findViewById(R.id.Noodle);
-    Button bunsik = (Button)findViewById(R.id.Bunsik);
-    int choicemenu;
+    Button soup;
+    Button rice;
+    Button noodle;
+    Button bunsik;
+    int choicemenu = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menuchoice);
+
+        soup = (Button)findViewById(R.id.Soup);
+        rice = (Button)findViewById(R.id.Rice);
+        noodle = (Button)findViewById(R.id.Noodle);
+        bunsik = (Button)findViewById(R.id.Bunsik);
 
         //사용자가 국을 골랐을 경우
         View.OnClickListener s = new View.OnClickListener() {
@@ -27,12 +33,13 @@ public class MenuChoice extends AppCompatActivity {
             {
                 choicemenu = 1;
                 Intent intent = new Intent(getApplicationContext(),Weather_GPS.class);
-                intent.putExtra("menu",choicemenu);
+                intent.putExtra("usermenu",choicemenu);
                 startActivity(intent);
+                choicemenu=0;
                 finish();
             }
         };
-        soup.setOnClickListener(s);
+        rice.setOnClickListener(s);
 
         //사용자가 밥을 골랐을 경우
         View.OnClickListener r = new View.OnClickListener() {
@@ -41,12 +48,13 @@ public class MenuChoice extends AppCompatActivity {
             {
                 choicemenu = 2;
                 Intent intent = new Intent(getApplicationContext(),Weather_GPS.class);
-                intent.putExtra("menu",choicemenu);
+                intent.putExtra("usermenu",choicemenu);
                 startActivity(intent);
+                choicemenu=0;
                 finish();
             }
         };
-        soup.setOnClickListener(r);
+        noodle.setOnClickListener(r);
 
         //사용자가 면을 골랐을 경우
         View.OnClickListener n = new View.OnClickListener() {
@@ -55,8 +63,9 @@ public class MenuChoice extends AppCompatActivity {
             {
                 choicemenu = 3;
                 Intent intent = new Intent(getApplicationContext(),Weather_GPS.class);
-                intent.putExtra("menu",choicemenu);
+                intent.putExtra("usermenu",choicemenu);
                 startActivity(intent);
+                choicemenu=0;
                 finish();
             }
         };
@@ -69,12 +78,13 @@ public class MenuChoice extends AppCompatActivity {
             {
                 choicemenu = 4;
                 Intent intent = new Intent(getApplicationContext(),Weather_GPS.class);
-                intent.putExtra("menu",choicemenu);
+                intent.putExtra("usermenu",choicemenu);
                 startActivity(intent);
+                choicemenu=0;
                 finish();
             }
         };
-        soup.setOnClickListener(b);
+        bunsik.setOnClickListener(b);
 
 
     }

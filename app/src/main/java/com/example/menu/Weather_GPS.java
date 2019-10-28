@@ -11,9 +11,11 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonArray;
@@ -30,14 +32,13 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Weather_GPS extends Activity
-
 {
     private double lat;
     private double lon;
 
 
     LocationManager Lm;
-    static int id; //날씨의 아이디 값
+    int id = 0; //날씨의 아이디 값
     static String NowWeather; //현재 날씨 값
     Intent intent;
     int UserMenu; //유저가 고른 밥,국,면,분식 값
@@ -52,22 +53,64 @@ public class Weather_GPS extends Activity
     static String BunsikMenu[] = {"김치전","떡볶이","파전","탕수육","치킨","햄버거"};
 
     //나쁜 날씨의 최종 메뉴 리스트
-    static ArrayList<String> BadWeatherMenu = new ArrayList<String>();
+    ArrayList<String> BadWeatherMenu = new ArrayList<String>();
     //좋은날의 최종 메뉴 리스트
-    static ArrayList<String> GoodWeatherMenu = new ArrayList<String>();
+    ArrayList<String> GoodWeatherMenu = new ArrayList<String>();
     //랜덤 클래스
     Random rnd = new Random();
 
-    //최종 메뉴
-    static String pickMenu = null;
+    //최종메뉴 선정 함수안 최종 메뉴
+    String pickMenu = null;
+    //최종 선정 메뉴
+    static String menu;
+
+    TextView choice;
+    TextView weather;
+    Button check;
+    Button back;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.testweather);
+        setContentView(R.layout.pick_menu);
+
+        choice = (TextView)findViewById(R.id.choice);
+        weather = (TextView)findViewById(R.id.weather);
+        check = (Button)findViewById(R.id.ok);
+        back = (Button)findViewById(R.id.cancel);
+
+        //확인 버튼 클릭시
+        View.OnClickListener o = new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                //현재 로그인된 유저 아이디를 preference 로부터 얻어옴
+               String userId = SharedPreference.getAttribute(getApplicationContext(),"userId");
+
+                // 맵 화면으로 진행
+                Intent intent = new Intent(getApplicationContext(),MapsActivity.class);
+                intent.putExtra("user_id",userId);
+                startActivity(intent);
+                finish();
+            }
+        };
+        check.setOnClickListener(o);
+
+        //취소버튼 클릭시
+        View.OnClickListener x = new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                //유저 메뉴 선택 화면으로 진행
+                Intent intent = new Intent(getApplicationContext(),MenuChoice.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        back.setOnClickListener(x);
 
          intent = getIntent();
-         UserMenu = intent.getIntExtra("menu",0);
+         UserMenu = intent.getIntExtra("usermenu",0);
 
          Lm = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -86,21 +129,6 @@ public class Weather_GPS extends Activity
 
             Lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, gpsLocationListener);
             Lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 1, gpsLocationListener);
-
-            //위동 경도 값이 둘다 빈값이 아니면 gps사용중지 및 메뉴 선정 함수 구동
-            if(getLat() != 0 )
-            {
-                if(getLon() !=0)
-                {
-                    Lm.removeUpdates(gpsLocationListener);
-
-                    getMenu(id,UserMenu); //메뉴를 최종선택 해주는 함수
-
-                    intent = new Intent(getApplicationContext(),MapsActivity.class);
-                    intent.putExtra("PickMenu",pickMenu);
-                    startActivity(intent);
-                }
-            }
 
 
         }
@@ -175,6 +203,13 @@ public class Weather_GPS extends Activity
                         JsonArray jarray = object.getAsJsonArray("weather");
                         JsonElement je = jarray.get(0);
                         id = Integer.parseInt(je.getAsJsonObject().get("id").getAsString());
+
+
+                        getMenu(id,UserMenu); //메뉴를 최종선택 해주는 함수
+
+                    /*intent = new Intent(getApplicationContext(),MapsActivity.class);
+                    intent.putExtra("PickMenu",Menu);
+                    startActivity(intent);*/
                     }
                 }
                 else
@@ -187,34 +222,34 @@ public class Weather_GPS extends Activity
         });
     }
 
-    private String getMenu(int id,int userMenu)
+    private void getMenu(int id,int userMenu)
     {
 
 
         //랜덤값을 담을 변수
         int random =0;
 
-        if(200<=id || id<300) //천둥 번개
+        if(200<=id && id<300) //천둥 번개
         {
             NowWeather = "비";
         }
-        else if(300<=id || id<400) //이슬비
+        else if(300<=id && id<400) //이슬비
         {
             NowWeather = "비";
         }
-        else if(500<=id || id<600) //비
+        else if(500<=id && id<600) //비
         {
             NowWeather = "비";
         }
-        else if(600<=id || id<700) //눈
+        else if(600<=id && id<700) //눈
         {
             NowWeather = "눈";
         }
-        else if(700<=id || id<800) //안개 미세먼지 등
+        else if(700<=id && id<800) //안개 미세먼지 등
         {
             NowWeather = "흐림";
         }
-        else if(800<=id || id<900) //좋은 날씨
+        else if(800<=id && id<900) //좋은 날씨
         {
             NowWeather = "좋음";
         }
@@ -345,7 +380,7 @@ public class Weather_GPS extends Activity
                 {
                     for(int i=0;i<BunsikMenu.length;i++)
                     {
-                        if(BunsikMenu[i].matches(".*국.*") || RiceMenu[i].matches(".*탕.*"))
+                        if(BunsikMenu[i].matches(".*국.*") || BunsikMenu[i].matches(".*탕.*"))
                         {
                             GoodWeatherMenu.add(BunsikMenu[i]);
                             random = rnd.nextInt(GoodWeatherMenu.size());
@@ -359,8 +394,13 @@ public class Weather_GPS extends Activity
 
         }
 
+        menu = pickMenu;
 
-        return pickMenu;
+        choice.setText(menu);
+        weather.setText(NowWeather);
+
+        BadWeatherMenu.clear();
+        GoodWeatherMenu.clear();
     }
 
 }

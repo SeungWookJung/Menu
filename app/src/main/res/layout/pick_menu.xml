@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/choice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="메뉴 선정 중입니다..."
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="45dp"/>
+    <TextView
+        android:id="@+id/weather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="날씨값 받아 오는 중..."
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="45dp"
+        android:layout_marginBottom="100dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/ok"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bt_ok"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bt_back"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+</LinearLayout>

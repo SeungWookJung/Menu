@@ -5,39 +5,41 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bt_muk"
+        android:layout_weight="1"/>
 
     <Button
         android:id="@+id/Soup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/soup"
-        android:textSize="120sp"
-        android:textColor="@android:color/holo_orange_dark"/>
+        android:background="@drawable/bt_tang"
+        android:layout_weight="1"
+        />
 
     <Button
         android:id="@+id/Rice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/rice"
-        android:textColor="@android:color/holo_green_light"
-        android:textSize="120sp"/>
+        android:background="@drawable/bt_hansik"
+        android:layout_weight="1"/>
 
 
     <Button
         android:id="@+id/Noodle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/noodle"
-        android:textColor="@android:color/holo_blue_bright"
-        android:textSize="120sp" />
+        android:background="@drawable/bt_myun"
+        android:layout_weight="1"/>
 
     <Button
         android:id="@+id/Bunsik"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/bunsik"
-        android:textSize="120sp"
-        android:textColor="@android:color/holo_red_dark"/>
+        android:background="@drawable/bt_rm"
+        android:layout_weight="1"/>
 
 
 </LinearLayout>

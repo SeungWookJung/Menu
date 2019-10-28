@@ -3,25 +3,33 @@ package com.example.menu;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import static java.lang.System.exit;
 
 public class LoadingActivity extends AppCompatActivity {
 
+
     LocationManager locationManager;
     Intent intent;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
+
+        ImageView imageViewRes = (ImageView) findViewById(R.id.loading);
+        Picasso.get().load(R.drawable.loading).into(imageViewRes);
 
         locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
 
@@ -62,7 +70,7 @@ public class LoadingActivity extends AppCompatActivity {
     }
     private void ToMain() //메인화면으로 넘어감
     {
-        intent = new Intent(this, LoginActivity.class);
+        intent = new Intent(this, MenuChoice.class);
         startActivity(intent);
         finish();
     }
@@ -86,4 +94,6 @@ public class LoadingActivity extends AppCompatActivity {
                 break;
         }
     }
+
+
 }
