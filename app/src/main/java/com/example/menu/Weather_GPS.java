@@ -44,13 +44,13 @@ public class Weather_GPS extends Activity
     int UserMenu; //유저가 고른 밥,국,면,분식 값
 
     //설문지의 국 메뉴
-    static String SoupMenu[]  = {"김치찌개","된장찌개","돼지국밥","마라탕","곱창전골","수제비","감자탕", "순두부찌개","해장국"};
+    private static String SoupMenu[]  = {"김치찌개","된장찌개","돼지국밥","마라탕","곱창전골","수제비","감자탕", "순두부찌개","해장국"};
     //설문지의 밥메뉴
-    static String RiceMenu[] = {"돼지국밥","두루치기"};
+    private static String RiceMenu[] = {"돼지국밥","두루치기"};
     //설문지의 면메뉴
-    static String NoodleMenu[] = {"칼국수","밀면","파스타","냉면","짬뽕","라면","우동"};
+    private static String NoodleMenu[] = {"칼국수","밀면","파스타","냉면","짬뽕","라면","우동"};
     //설문지의 분식 및 나머지 메뉴
-    static String BunsikMenu[] = {"김치전","떡볶이","파전","탕수육","치킨","햄버거"};
+    private static String BunsikMenu[] = {"김치전","떡볶이","파전","탕수육","치킨","햄버거"};
 
     //나쁜 날씨의 최종 메뉴 리스트
     ArrayList<String> BadWeatherMenu = new ArrayList<String>();
@@ -120,16 +120,10 @@ public class Weather_GPS extends Activity
         }
         else{
 
-            Location location = Lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-            SetLat(location.getLatitude());
-            SetLon(location.getLongitude());
-
-
-
             Lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 1, gpsLocationListener);
             Lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 1, gpsLocationListener);
 
+            Location location = Lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
         }
 

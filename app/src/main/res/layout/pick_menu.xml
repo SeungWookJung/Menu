@@ -14,7 +14,7 @@
         android:text="메뉴 선정 중입니다..."
         android:textAlignment="center"
         android:textColor="@android:color/black"
-        android:textSize="45dp"/>
+        android:textSize="30dp"/>
     <TextView
         android:id="@+id/weather"
         android:layout_width="match_parent"
@@ -22,7 +22,7 @@
         android:text="날씨값 받아 오는 중..."
         android:textAlignment="center"
         android:textColor="@android:color/black"
-        android:textSize="45dp"
+        android:textSize="30dp"
         android:layout_marginBottom="100dp"/>
 
     <LinearLayout

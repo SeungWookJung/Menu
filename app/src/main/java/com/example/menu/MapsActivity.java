@@ -6,7 +6,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 
 import android.Manifest;
@@ -17,12 +16,14 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -42,73 +43,78 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-
-import noman.googleplaces.NRPlaces;
-import noman.googleplaces.PlaceType;
-import noman.googleplaces.PlacesListener;
-import noman.googleplaces.Place;
-import noman.googleplaces.PlacesException;
-import noman.googleplaces.PlacesListener;
+import java.util.concurrent.ExecutionException;
 
 
-public class MapsActivity extends AppCompatActivity
-        implements OnMapReadyCallback,
-        ActivityCompat.OnRequestPermissionsResultCallback{
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback{
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
+    Button button1;
+    Button button2;
 
     private static final String TAG = "googlemap_example";
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
     private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
 
-
     // onRequestPermissionsResult에서 수신된 결과에서 ActivityCompat.requestPermissions를 사용한 퍼미션 요청을 구별하기 위해 사용됩니다.
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     boolean needRequest = false;
-
 
     // 앱을 실행하기 위해 필요한 퍼미션을 정의합니다.
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};  // 외부 저장소
 
 
     Location mCurrentLocatiion;
-    LatLng currentPosition;
 
+    //현재위치가 저장되는 변수
+    LatLng currentPosition;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
 
+    // Snackbar 사용하기 위해서는 View가 필요합니다.
+    private View mLayout;
 
-    private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
-    // (참고로 Toast에서는 Context가 필요했습니다.)
+    //전 액티비티에서 가져온 메뉴
+    Intent intent;
+    static String food = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_maps);
 
         mLayout = findViewById(R.id.layout_main);
 
-        locationRequest = new LocationRequest()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(UPDATE_INTERVAL_MS)
-                .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+        intent = getIntent();
+        food = intent.getStringExtra("menu");
 
 
-        LocationSettingsRequest.Builder builder =
-                new LocationSettingsRequest.Builder();
+
+
+
+        locationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(UPDATE_INTERVAL_MS).setFastestInterval(FASTEST_UPDATE_INTERVAL_MS);
+
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
 
         builder.addLocationRequest(locationRequest);
 
@@ -116,8 +122,7 @@ public class MapsActivity extends AppCompatActivity
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
 
@@ -126,6 +131,7 @@ public class MapsActivity extends AppCompatActivity
         Log.d(TAG, "onMapReady :");
 
         mMap = googleMap;
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
         //런타임 퍼미션 요청 대화상자나 GPS 활성 요청 대화상자 보이기전에
         //지도의 초기위치를 서울로 이동
@@ -135,22 +141,15 @@ public class MapsActivity extends AppCompatActivity
 
         //런타임 퍼미션 처리
         // 1. 위치 퍼미션을 가지고 있는지 체크합니다.
-        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION);
+        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
 
 
+        // 2. 이미 퍼미션을 가지고 있다면
+        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED && hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED   ) {
 
-        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED   ) {
-
-            // 2. 이미 퍼미션을 가지고 있다면
-            // ( 안드로이드 6.0 이하 버전은 런타임 퍼미션이 필요없기 때문에 이미 허용된 걸로 인식합니다.)
-
-
-            startLocationUpdates(); // 3. 위치 업데이트 시작
-
+            // 3. 위치 업데이트 시작
+            startLocationUpdates();
 
         }else {  //2. 퍼미션 요청을 허용한 적이 없다면 퍼미션 요청이 필요합니다. 2가지 경우(3-1, 4-1)가 있습니다.
 
@@ -165,8 +164,7 @@ public class MapsActivity extends AppCompatActivity
                     public void onClick(View view) {
 
                         // 3-3. 사용자게에 퍼미션 요청을 합니다. 요청 결과는 onRequestPermissionResult에서 수신됩니다.
-                        ActivityCompat.requestPermissions( MapsActivity.this, REQUIRED_PERMISSIONS,
-                                PERMISSIONS_REQUEST_CODE);
+                        ActivityCompat.requestPermissions( MapsActivity.this, REQUIRED_PERMISSIONS, PERMISSIONS_REQUEST_CODE);
                     }
                 }).show();
 
@@ -174,16 +172,15 @@ public class MapsActivity extends AppCompatActivity
             } else {
                 // 4-1. 사용자가 퍼미션 거부를 한 적이 없는 경우에는 퍼미션 요청을 바로 합니다.
                 // 요청 결과는 onRequestPermissionResult에서 수신됩니다.
-                ActivityCompat.requestPermissions( this, REQUIRED_PERMISSIONS,
-                        PERMISSIONS_REQUEST_CODE);
+                ActivityCompat.requestPermissions( this, REQUIRED_PERMISSIONS, PERMISSIONS_REQUEST_CODE);
             }
 
         }
 
 
-
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+
+        //맵을 클릭했을때 사용하는 함수
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
@@ -194,6 +191,7 @@ public class MapsActivity extends AppCompatActivity
         });
     }
 
+    //위치를 응답 받았을때
     LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -203,15 +201,28 @@ public class MapsActivity extends AppCompatActivity
 
             if (locationList.size() > 0) {
                 location = locationList.get(locationList.size() - 1);
-                //location = locationList.get(0);
 
-                currentPosition
-                        = new LatLng(location.getLatitude(), location.getLongitude());
+                //현재위치 저장
+                currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
+                restaurant_info info = new restaurant_info();
+
+                try
+                {
+                    //서버로 현재위치를 보내 근방 xx M 안에 음식점 정보를 JSON 형식으로 가져옴
+                    String json = info.execute(String.valueOf(currentPosition.latitude),String.valueOf(currentPosition.longitude),food).get();
+                    //JSON 파싱후 마커를 찍어준다
+                    JsonParse(json);
+
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
 
 
                 String markerTitle = getCurrentAddress(currentPosition);
-                String markerSnippet = "위도:" + String.valueOf(location.getLatitude())
-                        + " 경도:" + String.valueOf(location.getLongitude());
+                String markerSnippet = "위도:" + String.valueOf(location.getLatitude()) + " 경도:" + String.valueOf(location.getLongitude());
 
                 Log.d(TAG, "onLocationResult : " + markerSnippet);
 
@@ -228,7 +239,7 @@ public class MapsActivity extends AppCompatActivity
     };
 
 
-
+    //현재위치 업데이트
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {
@@ -237,15 +248,12 @@ public class MapsActivity extends AppCompatActivity
             showDialogForLocationServiceSetting();
         }else {
 
-            int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION);
-            int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION);
+            int hasFineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+            int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
 
 
 
-            if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED ||
-                    hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED   ) {
+            if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED || hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED   ) {
 
                 Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
                 return;
@@ -298,7 +306,7 @@ public class MapsActivity extends AppCompatActivity
 
 
 
-
+    //현재위치를 얻어 올때
     public String getCurrentAddress(LatLng latlng) {
 
         //지오코더... GPS를 주소로 변환
@@ -308,10 +316,7 @@ public class MapsActivity extends AppCompatActivity
 
         try {
 
-            addresses = geocoder.getFromLocation(
-                    latlng.latitude,
-                    latlng.longitude,
-                    1);
+            addresses = geocoder.getFromLocation(latlng.latitude, latlng.longitude, 1);
         } catch (IOException ioException) {
             //네트워크 문제
             Toast.makeText(this, "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
@@ -334,15 +339,15 @@ public class MapsActivity extends AppCompatActivity
 
     }
 
-
+    //현재 서비스 상태
     public boolean checkLocationServicesStatus() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
 
+    //현재위치 + 마커 설정
     public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
 
 
@@ -365,7 +370,7 @@ public class MapsActivity extends AppCompatActivity
 
     }
 
-
+    //기본위치
     public void setDefaultLocation() {
 
 
@@ -394,17 +399,11 @@ public class MapsActivity extends AppCompatActivity
     //여기부터는 런타임 퍼미션 처리을 위한 메소드들
     private boolean checkPermission() {
 
-        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION);
+        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
 
 
-
-        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
-                hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED   ) {
-            return true;
-        }
+        if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED && hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED   ) { return true; }
 
         return false;
 
@@ -443,13 +442,10 @@ public class MapsActivity extends AppCompatActivity
             else {
                 // 거부한 퍼미션이 있다면 앱을 사용할 수 없는 이유를 설명해주고 앱을 종료합니다.2 가지 경우가 있습니다.
 
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
-                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])) {
-
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0]) || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])) {
 
                     // 사용자가 거부만 선택한 경우에는 앱을 다시 실행하여 허용을 선택하면 앱을 사용할 수 있습니다.
-                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요. ",
-                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요. ", Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
 
                         @Override
                         public void onClick(View view) {
@@ -462,8 +458,7 @@ public class MapsActivity extends AppCompatActivity
 
 
                     // "다시 묻지 않음"을 사용자가 체크하고 거부를 선택한 경우에는 설정(앱 정보)에서 퍼미션을 허용해야 앱을 사용할 수 있습니다.
-                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 설정(앱 정보)에서 퍼미션을 허용해야 합니다. ",
-                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
+                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 설정(앱 정보)에서 퍼미션을 허용해야 합니다. ", Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
 
                         @Override
                         public void onClick(View view) {
@@ -483,14 +478,12 @@ public class MapsActivity extends AppCompatActivity
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
         builder.setTitle("위치 서비스 비활성화");
-        builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n"
-                + "위치 설정을 수정하실래요?");
+        builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n" + "위치 설정을 수정하실래요?");
         builder.setCancelable(true);
         builder.setPositiveButton("설정", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                Intent callGPSSettingIntent
-                        = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivityForResult(callGPSSettingIntent, GPS_ENABLE_REQUEST_CODE);
             }
         });
@@ -529,6 +522,134 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+    //거리 계산
+    public double getDistance(LatLng start, LatLng end) {
+
+        double distance = 0;
+
+        //사용자 위치
+        Location locationA = new Location("user");
+        locationA.setLatitude(start.latitude);
+        locationA.setLongitude(start.longitude);
+
+        //음식점 위치
+        Location locationB = new Location("restaurant");
+        locationB.setLatitude(end.latitude);
+        locationB.setLongitude(end.longitude);
+
+        //거리계산
+        distance = locationA.distanceTo(locationB);
+
+        return distance;
+    }
+
+    class restaurant_info extends AsyncTask<String,Void,String> {
+
+        private String result;
+
+        @Override
+        protected String doInBackground(String... params) {
+            String  sendMsg,str;
+            try {
+
+                String url = "http://116.126.79.199:8081/Menu_Service/login.jsp";
+                URL obj = new URL(url);
+                HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(20000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                conn.setRequestProperty("Accept-Charset", "UTF-8");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                sendMsg = "user_lat="+params[0]+"&user_lon="+params[1]+"&menu="+params[2];
+
+                osw.write(sendMsg);
+                osw.flush();
+
+                if(conn.getResponseCode() == conn.HTTP_OK)
+                {
+                    InputStreamReader tmp = new InputStreamReader(conn.getInputStream(),"UTF-8");
+                    BufferedReader reader = new BufferedReader(tmp);
+                    StringBuffer buffer = new StringBuffer();
+
+                    while((str= reader.readLine()) != null)
+                    {
+                        buffer.append(str);
+                    }
+
+                    result = buffer.toString();
+                    reader.close();
+                    tmp.close();
+                }
+                else Log.d("결과 : ","에러입니다.");
+                osw.close();
+                conn.disconnect();
+            }
+            catch (Exception e) { e.printStackTrace(); }
+
+
+            return result;
+
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
+        @Override
+        protected void onCancelled()
+        {
+            super.onCancelled();
+        }
+
+    }
+
+    public void JsonParse(String jsonString) {
+
+        String restaurant_name = null;
+        String menu = null;
+        String lat = null;
+        String lon = null;
+        String number = null;
+        String  star_point= null;
+        String count = null;
+
+        String[] arraysum = new String[7];
+        MarkerOptions mo = new MarkerOptions();
+        try {
+            JSONArray jarray = new JSONObject(jsonString).getJSONArray("restaurant");
+            for (int i = 0; i < jarray.length(); i++) {
+                JSONObject jObject = jarray.getJSONObject(i);
+
+                restaurant_name = jObject.optString("restaurant_name");
+                menu = jObject.optString("menu");
+                lat = jObject.optString("lat");
+                lon = jObject.optString("lon");
+                number = jObject.optString("number");
+                star_point = jObject.optString("star_point");
+                count = jObject.optString("count");
+
+                arraysum[0] = restaurant_name;
+                arraysum[1] = menu;
+                arraysum[2] = lat;
+                arraysum[3] = lon;
+                arraysum[4] = number;
+                arraysum[5] = star_point;
+                arraysum[6] = count;
+
+                LatLng res_pos = new LatLng(Double.valueOf(lat),Double.valueOf(lon));
+                mo.title(restaurant_name).position(res_pos).snippet("메뉴: "+menu+"\t전화번호: "+number+"\t 별점: "+star_point+"\t 유저 선택 횟수: "+ count);
+                mMap.addMarker(mo).showInfoWindow();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }
