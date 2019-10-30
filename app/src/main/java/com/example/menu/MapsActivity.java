@@ -12,6 +12,8 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -26,6 +28,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.cs.googlemaproute.DrawRoute;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -41,6 +44,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
@@ -58,7 +62,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback{
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, DrawRoute.onDrawRoute{
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
@@ -127,7 +131,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onMapReady(final GoogleMap googleMap) {
+    public void onMapReady(GoogleMap googleMap) {
         Log.d(TAG, "onMapReady :");
 
         mMap = googleMap;
@@ -175,12 +179,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 ActivityCompat.requestPermissions( this, REQUIRED_PERMISSIONS, PERMISSIONS_REQUEST_CODE);
             }
 
+
         }
 
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                marker.showInfoWindow();
+
+                return false;
+            }
+        });
 
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
-        //맵을 클릭했을때 사용하는 함수
+        /*//맵을 클릭했을때 사용하는 함수
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
@@ -188,7 +202,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 Log.d( TAG, "onMapClick :");
             }
-        });
+        });*/
+
+
+     mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+         @Override
+         public void onInfoWindowClick(Marker marker) {
+
+             LatLng pick_res_pos = marker.getPosition();
+             String pick_res_name = marker.getTitle();
+             double distance;
+             mMap.clear();
+
+             MarkerOptions mo= new MarkerOptions();
+             PolylineOptions poly = new PolylineOptions();
+             mo.position(pick_res_pos);
+             mo.title(pick_res_name);
+             mMap.addMarker(mo);
+
+
+                 poly.color(Color.RED);
+                 poly.width(5);
+                 poly.add(currentPosition, mo.getPosition());
+                 distance = getDistance(currentPosition,mo.getPosition());
+                 mMap.addPolyline(poly);
+
+
+
+
+         }
+     });
     }
 
     //위치를 응답 받았을때
@@ -204,6 +247,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //현재위치 저장
                 currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
+
                 restaurant_info info = new restaurant_info();
 
                 try
@@ -543,6 +587,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return distance;
     }
 
+    @Override
+    public void afterDraw(String result) {
+
+    }
+
     class restaurant_info extends AsyncTask<String,Void,String> {
 
         private String result;
@@ -609,6 +658,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    //json 정보를 파싱해주는 함수
     public void JsonParse(String jsonString) {
 
         String restaurant_name = null;
@@ -644,7 +694,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 LatLng res_pos = new LatLng(Double.valueOf(lat),Double.valueOf(lon));
                 mo.title(restaurant_name).position(res_pos).snippet("메뉴: "+menu+"\t전화번호: "+number+"\t 별점: "+star_point+"\t 유저 선택 횟수: "+ count);
-                mMap.addMarker(mo).showInfoWindow();
+                mMap.addMarker(mo);
             }
         } catch (JSONException e) {
             e.printStackTrace();

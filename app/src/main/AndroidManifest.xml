@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.menu">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,7 +13,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.NoTitleBar">
+        android:theme="@android:style/Theme.NoTitleBar"
+        tools:replace="android:allowBackup">
 
         <activity android:name=".SignUp" />
 
@@ -46,6 +48,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data android:name="com.kakao.sdk.AppKey" android:value="0902c31f0cecd1bb1ca29000498536ab"/>
     </application>
 
 </manifest>
