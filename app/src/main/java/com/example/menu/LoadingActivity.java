@@ -70,7 +70,7 @@ public class LoadingActivity extends AppCompatActivity {
     }
     private void ToMain() //메인화면으로 넘어감
     {
-        intent = new Intent(this, MenuChoice.class);
+        intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
         finish();
     }

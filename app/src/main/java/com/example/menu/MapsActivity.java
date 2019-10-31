@@ -12,14 +12,12 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -28,7 +26,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.cs.googlemaproute.DrawRoute;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -62,7 +60,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, DrawRoute.onDrawRoute{
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback{
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
@@ -135,7 +133,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d(TAG, "onMapReady :");
 
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
         //런타임 퍼미션 요청 대화상자나 GPS 활성 요청 대화상자 보이기전에
         //지도의 초기위치를 서울로 이동
@@ -587,10 +584,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return distance;
     }
 
-    @Override
-    public void afterDraw(String result) {
-
-    }
 
     class restaurant_info extends AsyncTask<String,Void,String> {
 
@@ -601,7 +594,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String  sendMsg,str;
             try {
 
-                String url = "http://116.126.79.199:8081/Menu_Service/login.jsp";
+                String url = "http://116.126.79.199:8081/Menu_Service/sendRestaurant.jsp";
                 URL obj = new URL(url);
                 HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
 
@@ -669,7 +662,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String  star_point= null;
         String count = null;
 
-        String[] arraysum = new String[7];
         MarkerOptions mo = new MarkerOptions();
         try {
             JSONArray jarray = new JSONObject(jsonString).getJSONArray("restaurant");
@@ -683,14 +675,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 number = jObject.optString("number");
                 star_point = jObject.optString("star_point");
                 count = jObject.optString("count");
-
-                arraysum[0] = restaurant_name;
-                arraysum[1] = menu;
-                arraysum[2] = lat;
-                arraysum[3] = lon;
-                arraysum[4] = number;
-                arraysum[5] = star_point;
-                arraysum[6] = count;
 
                 LatLng res_pos = new LatLng(Double.valueOf(lat),Double.valueOf(lon));
                 mo.title(restaurant_name).position(res_pos).snippet("메뉴: "+menu+"\t전화번호: "+number+"\t 별점: "+star_point+"\t 유저 선택 횟수: "+ count);

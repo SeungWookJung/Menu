@@ -19,18 +19,25 @@ import java.net.URL;
 
 public class SignUp extends AppCompatActivity {
 
-    TextView id = (TextView)findViewById(R.id.signup_inputID);
-    TextView pw = (TextView)findViewById(R.id.signup_inputPW);
-    TextView age = (TextView)findViewById(R.id.signup_inputAGE);
-    TextView name = (TextView)findViewById(R.id.signup_inputNAME);
-    Button check = (Button)findViewById(R.id.check);
-    Button cancel = (Button)findViewById(R.id.cancel);
+    TextView id;
+    TextView pw;
+    TextView age;
+    TextView name;
+    Button check;
+    Button cancel;
     String result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        id = (TextView)findViewById(R.id.signup_inputID);
+        pw = (TextView)findViewById(R.id.signup_inputPW);
+        age = (TextView)findViewById(R.id.signup_inputAGE);
+        name = (TextView)findViewById(R.id.signup_inputNAME);
+        check = (Button)findViewById(R.id.check);
+        cancel = (Button)findViewById(R.id.cancel);
 
         View.OnClickListener ok = new View.OnClickListener() {
             @Override

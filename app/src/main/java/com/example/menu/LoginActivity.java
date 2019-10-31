@@ -52,7 +52,7 @@ public class LoginActivity extends Activity {
                         SharedPreference.setAttribute(getApplicationContext(), "userId", id.getText().toString());
 
                         //메뉴 골라주는 액티비티로 진행
-                        Intent intent = new Intent(getApplicationContext(),Weather_GPS.class);
+                        Intent intent = new Intent(getApplicationContext(),MenuChoice.class);
                         login1.cancel(true);
 
                         startActivity(intent);
