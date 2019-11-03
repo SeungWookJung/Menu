@@ -90,6 +90,7 @@ public class Weather_GPS extends Activity
                 // 맵 화면으로 진행
                 Intent intent = new Intent(getApplicationContext(),MapsActivity.class);
                 intent.putExtra("user_id",userId);
+                intent.putExtra("user_menu",menu);
                 startActivity(intent);
                 finish();
             }

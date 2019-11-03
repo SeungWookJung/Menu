@@ -57,7 +57,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback{
@@ -107,7 +106,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLayout = findViewById(R.id.layout_main);
 
         intent = getIntent();
-        food = intent.getStringExtra("menu");
+        food = intent.getStringExtra("user_menu");
 
 
 
@@ -135,6 +134,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         //런타임 퍼미션 요청 대화상자나 GPS 활성 요청 대화상자 보이기전에
+
         //지도의 초기위치를 서울로 이동
         setDefaultLocation();
 
@@ -179,6 +179,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
+
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -206,26 +207,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
          @Override
          public void onInfoWindowClick(Marker marker) {
 
+             //유저위치
+             LatLng user_pos = currentPosition;
+
+             //선택한 마커 음식점
              LatLng pick_res_pos = marker.getPosition();
+
              String pick_res_name = marker.getTitle();
+
              double distance;
              mMap.clear();
 
-             MarkerOptions mo= new MarkerOptions();
+
+             MarkerOptions res= new MarkerOptions();
+             MarkerOptions usr = new MarkerOptions();
              PolylineOptions poly = new PolylineOptions();
-             mo.position(pick_res_pos);
-             mo.title(pick_res_name);
-             mMap.addMarker(mo);
+             res.position(pick_res_pos);
+             res.title(pick_res_name);
+             mMap.addMarker(res);
+
+             usr.position(user_pos);
+             res.title("유저위치는 : " +currentPosition.toString());
+             mMap.addMarker(usr);
 
 
-                 poly.color(Color.RED);
-                 poly.width(5);
-                 poly.add(currentPosition, mo.getPosition());
-                 distance = getDistance(currentPosition,mo.getPosition());
-                 mMap.addPolyline(poly);
-
-
-
+             //빨간줄을 그려주는 라인
+             poly.color(Color.RED);
+             poly.width(5);
+             poly.add(user_pos, res.getPosition());
+             distance = getDistance(currentPosition,res.getPosition());
+             mMap.addPolyline(poly);
+             Toast.makeText(getApplicationContext(), "거리는 "+ distance +" 입니다.", Toast.LENGTH_LONG).show();
 
          }
      });
@@ -245,22 +257,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //현재위치 저장
                 currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
 
-                restaurant_info info = new restaurant_info();
-
-                try
-                {
-                    //서버로 현재위치를 보내 근방 xx M 안에 음식점 정보를 JSON 형식으로 가져옴
-                    String json = info.execute(String.valueOf(currentPosition.latitude),String.valueOf(currentPosition.longitude),food).get();
-                    //JSON 파싱후 마커를 찍어준다
-                    JsonParse(json);
-
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-
 
                 String markerTitle = getCurrentAddress(currentPosition);
                 String markerSnippet = "위도:" + String.valueOf(location.getLatitude()) + " 경도:" + String.valueOf(location.getLongitude());
@@ -272,6 +268,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocatiion = location;
+
+                restaurant_info info = new restaurant_info();
+
+                info.execute(String.valueOf(currentMarker.getPosition().latitude),String.valueOf(currentMarker.getPosition().longitude),food);
+
+                mFusedLocationClient.removeLocationUpdates(locationCallback);
             }
 
 
@@ -408,7 +410,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
         mMap.moveCamera(cameraUpdate);
-
     }
 
     //기본위치
@@ -585,13 +586,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    class restaurant_info extends AsyncTask<String,Void,String> {
+    class restaurant_info extends AsyncTask<String,Void,JSONObject> {
 
         private String result;
 
         @Override
-        protected String doInBackground(String... params) {
+        protected JSONObject doInBackground(String... params) {
             String  sendMsg,str;
+
             try {
 
                 String url = "http://116.126.79.199:8081/Menu_Service/sendRestaurant.jsp";
@@ -605,43 +607,85 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 conn.setDoOutput(true);
 
                 conn.setRequestProperty("Accept-Charset", "UTF-8");
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream(),"UTF-8");
                 sendMsg = "user_lat="+params[0]+"&user_lon="+params[1]+"&menu="+params[2];
 
                 osw.write(sendMsg);
                 osw.flush();
 
-                if(conn.getResponseCode() == conn.HTTP_OK)
-                {
-                    InputStreamReader tmp = new InputStreamReader(conn.getInputStream(),"UTF-8");
+                if(conn.getResponseCode() == conn.HTTP_OK) {
+                    InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
                     BufferedReader reader = new BufferedReader(tmp);
                     StringBuffer buffer = new StringBuffer();
 
-                    while((str= reader.readLine()) != null)
-                    {
+                    while ((str = reader.readLine()) != null) {
                         buffer.append(str);
                     }
+                        reader.close();
+                        tmp.close();
 
-                    result = buffer.toString();
-                    reader.close();
-                    tmp.close();
-                }
+                    return new JSONObject(buffer.toString());
+
+                    }
                 else Log.d("결과 : ","에러입니다.");
+
                 osw.close();
                 conn.disconnect();
             }
             catch (Exception e) { e.printStackTrace(); }
 
 
-            return result;
-
+            return null;
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(JSONObject jo) {
+            super.onPostExecute(jo);
+            if(jo == null)
+            {
+                Toast.makeText(getApplicationContext(), "음식점이 없습니다.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(),MenuChoice.class);
+                startActivity(intent);
+                finish();
+            }
+
+            String restaurant_name = null;
+            String menu = null;
+            String lat = null;
+            String lon = null;
+            String number = null;
+            String star_point = null;
+            String count = null;
+
+            MarkerOptions mo = new MarkerOptions();
+
+            JSONArray jarray;
+
+            try {
+                jarray = jo.getJSONArray("restaurant");
+
+
+            Log.d("서버값", jarray.toString());
+
+            for (int i = 0; i < jarray.length(); i++) {
+
+                JSONObject jObject = jarray.getJSONObject(i);
+
+                restaurant_name = jObject.optString("restaurant_name");
+                menu = jObject.optString("menu");
+                lat = jObject.optString("lat");
+                lon = jObject.optString("lon");
+                number = jObject.optString("number");
+                star_point = jObject.optString("star_point");
+                count = jObject.optString("count");
+
+                LatLng res_pos = new LatLng(Double.valueOf(lat), Double.valueOf(lon));
+                mo.title(restaurant_name).position(res_pos).snippet("메뉴: " + menu + "\t전화번호: " + number + "\t 별점: " + star_point + "\t 유저 선택 횟수: " + count);
+                mMap.addMarker(mo);
+                }
+            } catch (JSONException e) { e.printStackTrace(); }
         }
         @Override
         protected void onCancelled()
@@ -663,8 +707,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String count = null;
 
         MarkerOptions mo = new MarkerOptions();
+
         try {
+
             JSONArray jarray = new JSONObject(jsonString).getJSONArray("restaurant");
+
+            Log.d("서버값",jarray.toString());
+
             for (int i = 0; i < jarray.length(); i++) {
                 JSONObject jObject = jarray.getJSONObject(i);
 
