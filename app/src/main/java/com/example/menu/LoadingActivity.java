@@ -7,17 +7,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 import static java.lang.System.exit;
 
-public class LoadingActivity extends AppCompatActivity {
+public class LoadingActivity extends Activity {
 
 
     LocationManager locationManager;
@@ -28,8 +31,8 @@ public class LoadingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
 
-        ImageView imageViewRes = (ImageView) findViewById(R.id.loading);
-        Picasso.get().load(R.drawable.loading).into(imageViewRes);
+
+
 
         locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
 
@@ -57,15 +60,21 @@ public class LoadingActivity extends AppCompatActivity {
             }
         });
 
+        //gps가 꺼져 있을시 설정 화면으로 이동
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            alertDialog.show();
+        }
 
-            //gps가 꺼져 있을시 설정 화면으로 이동
-            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            {
-                alertDialog.show();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //gps가 켜져 있을시 자동으로 메인화면으로 넘어감
+                ToMain();
             }
+        },2000);
 
-            //gps가 켜져 있을시 자동으로 메인화면으로 넘어감
-            else { ToMain(); }
 
     }
     private void ToMain() //메인화면으로 넘어감

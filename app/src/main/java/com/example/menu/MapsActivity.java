@@ -588,14 +588,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     class restaurant_info extends AsyncTask<String,Void,JSONObject> {
 
-        private String result;
-
         @Override
         protected JSONObject doInBackground(String... params) {
-            String  sendMsg,str;
+            String sendMsg, str;
+            JSONObject result = null;
 
             try {
-
                 String url = "http://116.126.79.199:8081/Menu_Service/sendRestaurant.jsp";
                 URL obj = new URL(url);
                 HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
@@ -609,13 +607,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 conn.setRequestProperty("Accept-Charset", "UTF-8");
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 
-                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream(),"UTF-8");
-                sendMsg = "user_lat="+params[0]+"&user_lon="+params[1]+"&menu="+params[2];
+                OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+                sendMsg = "user_lat=" + params[0] + "&user_lon=" + params[1] + "&menu=" + params[2];
 
                 osw.write(sendMsg);
                 osw.flush();
 
-                if(conn.getResponseCode() == conn.HTTP_OK) {
+                if (conn.getResponseCode() == conn.HTTP_OK) {
                     InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
                     BufferedReader reader = new BufferedReader(tmp);
                     StringBuffer buffer = new StringBuffer();
@@ -623,33 +621,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     while ((str = reader.readLine()) != null) {
                         buffer.append(str);
                     }
-                        reader.close();
-                        tmp.close();
+                    reader.close();
+                    tmp.close();
 
-                    return new JSONObject(buffer.toString());
-
-                    }
-                else Log.d("결과 : ","에러입니다.");
+                    result = new JSONObject(buffer.toString());
+                } else Log.d("결과 : ", "에러입니다.");
 
                 osw.close();
                 conn.disconnect();
+
+            }catch (Exception e)
+            {
+
+                Toast.makeText(getApplicationContext(), "음식점이 없습니다. 메뉴를 다시 골라 주세요", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(),MenuChoice.class);
+                startActivity(intent);
+                finish();
             }
-            catch (Exception e) { e.printStackTrace(); }
-
-
-            return null;
+            finally
+            {
+                return result;
+            }
         }
 
         @Override
         protected void onPostExecute(JSONObject jo) {
             super.onPostExecute(jo);
-            if(jo == null)
-            {
-                Toast.makeText(getApplicationContext(), "음식점이 없습니다.", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(getApplicationContext(),MenuChoice.class);
-                startActivity(intent);
-                finish();
-            }
 
             String restaurant_name = null;
             String menu = null;
@@ -664,8 +661,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             JSONArray jarray;
 
             try {
-                jarray = jo.getJSONArray("restaurant");
 
+                jarray = jo.getJSONArray("restaurant");
 
             Log.d("서버값", jarray.toString());
 
