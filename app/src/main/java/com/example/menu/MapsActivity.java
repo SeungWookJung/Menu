@@ -125,6 +125,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
     @Override
@@ -237,7 +239,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
              poly.add(user_pos, res.getPosition());
              distance = getDistance(currentPosition,res.getPosition());
              mMap.addPolyline(poly);
-             Toast.makeText(getApplicationContext(), "거리는 "+ distance +" 입니다.", Toast.LENGTH_LONG).show();
+             Toast.makeText(getApplicationContext(), "거리는 "+ (int)distance +" 입니다.", Toast.LENGTH_LONG).show();
 
          }
      });
