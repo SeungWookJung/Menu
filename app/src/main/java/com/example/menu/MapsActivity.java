@@ -63,8 +63,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
-    Button button1;
-    Button button2;
+    Button backmenu;
 
     private static final String TAG = "googlemap_example";
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
@@ -126,7 +125,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
+        backmenu = (Button)findViewById(R.id.backMenu);
+        View.OnClickListener back = new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                //회원가입 화면으로 진행
+                Intent intent = new Intent(getApplicationContext(),MenuChoice.class);
+                startActivity(intent);
+                finish();
+            }
+        };
+        backmenu.setOnClickListener(back);
     }
 
     @Override
